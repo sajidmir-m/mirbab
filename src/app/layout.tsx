@@ -1,11 +1,7 @@
 
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import Chatbot from "@/components/ui/Chatbot";
-import Snowfall from "@/components/ui/Snowfall";
-import CornerDecorations from "@/components/ui/CornerDecorations";
+import ConditionalLayout from "@/components/layout/ConditionalLayout";
 import { ToastProvider } from "@/components/ui/Toast";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import StructuredData from "./structured-data";
@@ -70,14 +66,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
         <ToastProvider>
-          <Snowfall />
-          {/* <CornerDecorations /> */}
-          <Navbar />
-          <main className="flex-grow">
+          <ConditionalLayout>
             {children}
-          </main>
-          <Footer />
-          <Chatbot />
+          </ConditionalLayout>
         </ToastProvider>
       </body>
     </html>

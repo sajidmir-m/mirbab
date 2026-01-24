@@ -319,26 +319,6 @@ export default function AdminPanel() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-100 px-8 py-4 flex justify-between items-center sticky top-0 z-10">
-          <h2 className="text-xl font-bold text-gray-800 capitalize">{activeTab}</h2>
-          <div className="flex items-center gap-4">
-            <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <input 
-                type="text" 
-                placeholder="Search..." 
-                className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm w-64"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center text-teal-700 font-bold">
-              A
-            </div>
-          </div>
-        </header>
-
         <div className="p-8 max-w-7xl mx-auto">
           
           {/* Dashboard View */}
