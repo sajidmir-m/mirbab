@@ -18,7 +18,9 @@ import {
   LayoutDashboard,
   Bell,
   Database,
-  Users
+  Users,
+  Menu,
+  X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MOCK_PACKAGES } from '@/data/packages';
@@ -45,6 +47,7 @@ export default function AdminPanel() {
   const [selectedFAQ, setSelectedFAQ] = useState<any>(null);
   const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
   const [selectedInquiry, setSelectedInquiry] = useState<any>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Mock Stats
   const stats = [
@@ -271,8 +274,26 @@ export default function AdminPanel() {
   // Admin Dashboard
   return (
     <div className="min-h-screen bg-gray-50 flex font-sans text-gray-900">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-teal-900 text-white rounded-lg shadow-lg"
+      >
+        {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
+      {/* Mobile Sidebar Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-72 bg-teal-900 text-white flex-shrink-0 hidden lg:flex flex-col">
+      <aside className={`w-72 bg-teal-900 text-white flex-shrink-0 flex-col fixed lg:static h-screen lg:h-auto z-50 transition-transform duration-300 flex ${
+        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
         <div className="p-8">
           <h1 className="text-2xl font-bold tracking-tight">Mir Baba Admin</h1>
           <p className="text-teal-400 text-sm mt-1">Management Console</p>
@@ -288,7 +309,10 @@ export default function AdminPanel() {
           ].map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                setActiveTab(item.id);
+                setMobileMenuOpen(false);
+              }}
               className={`flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-left transition-all ${
                 activeTab === item.id 
                   ? 'bg-teal-800 text-white shadow-lg' 
@@ -308,7 +332,10 @@ export default function AdminPanel() {
 
         <div className="p-4">
           <button
-            onClick={handleLogout}
+            onClick={() => {
+              handleLogout();
+              setMobileMenuOpen(false);
+            }}
             className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-left text-red-300 hover:bg-red-900/30 hover:text-red-200 transition-colors"
           >
             <LogOut size={20} />
@@ -318,9 +345,38 @@ export default function AdminPanel() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8 max-w-7xl mx-auto">
-          
+      <main className="flex-1 overflow-y-auto lg:ml-0">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto">
+
+          {/* Mobile Navigation Tabs */}
+          <div className="mb-6 flex lg:hidden gap-2 overflow-x-auto pb-2">
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+              { id: 'inquiries', label: 'Inquiries', icon: MessageSquare },
+              { id: 'packages', label: 'Tour Packages', icon: Package },
+              { id: 'faqs', label: 'Chatbot FAQs', icon: HelpCircle },
+              { id: 'users', label: 'Users', icon: Users },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                  activeTab === item.id
+                    ? 'bg-teal-600 text-white shadow-md'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100'
+                }`}
+              >
+                <item.icon size={16} />
+                <span>{item.label}</span>
+                {item.id === 'inquiries' && inquiries.filter(i => i.status === 'pending').length > 0 && (
+                  <span className="ml-1 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                    {inquiries.filter(i => i.status === 'pending').length}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
           {/* Dashboard View */}
           {activeTab === 'dashboard' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
