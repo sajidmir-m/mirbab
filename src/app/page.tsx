@@ -136,49 +136,154 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Popular Packages */}
-      <section className="py-20 px-4">
+      {/* Tour Packages & Cab Deals (Most Popular Adventures) */}
+      <section className="py-20 px-4 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <ScrollReveal width="100%">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-12">
-              <div className="max-w-2xl">
-                <span className="text-teal-600 font-semibold tracking-wider uppercase text-sm">Tour Packages</span>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">Most Popular Adventures</h2>
-                <div className="w-20 h-1 bg-teal-500 mt-4 rounded-full"></div>
+            <div className="grid md:grid-cols-2 gap-10 items-start mb-12">
+              {/* Left: Text & Highlights */}
+              <div>
+                <span className="text-teal-600 font-semibold tracking-wider uppercase text-sm">
+                  Tour Packages
+                </span>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">
+                  Most Popular Adventures in Kashmir
+                </h2>
+                <div className="w-20 h-1 bg-teal-500 mt-4 rounded-full" />
+                <p className="text-gray-600 mt-4">
+                  Handpicked Kashmir tour packages with premium cabs, curated stays, and local experts.
+                  From romantic houseboats on Dal Lake to thrilling drives to Gulmarg and Sonmarg,
+                  we take care of everything so you travel stress-free.
+                </p>
+
+                <div className="mt-6 grid sm:grid-cols-2 gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1 text-teal-600">
+                      <ShieldCheck size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Verified Hotels & Houseboats</h4>
+                      <p className="text-sm text-gray-600">
+                        Stay in handpicked 3★–5★ hotels, cozy houseboats on Dal Lake, and premium camps in
+                        Gulmarg & Pahalgam.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1 text-teal-600">
+                      <Map size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Private Cabs & Transfers</h4>
+                      <p className="text-sm text-gray-600">
+                        Comfortable Sedans, SUVs & Tempo Travellers with professional local drivers for all
+                        transfers & sightseeing.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Popular Places */}
+                <div className="mt-6">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">Top Destinations We Cover</p>
+                  <div className="flex flex-wrap gap-2">
+                    {["Srinagar", "Gulmarg", "Pahalgam", "Sonmarg", "Doodhpathri", "Gurez Valley", "Daksum", "Yusmarg"].map((place) => (
+                      <span
+                        key={place}
+                        className="px-3 py-1 text-xs md:text-sm rounded-full bg-gray-100 text-gray-700 border border-gray-200"
+                      >
+                        {place}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-8 flex flex-wrap items-center gap-4">
+                  <Link
+                    href="/packages"
+                    className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-teal-500/30"
+                  >
+                    View All Packages
+                    <span className="text-xl">→</span>
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="inline-flex items-center gap-2 text-teal-700 font-semibold hover:underline"
+                  >
+                    Get a Custom Quote
+                  </Link>
+                </div>
               </div>
-              <Link 
-                href="/packages" 
-                className="hidden md:flex items-center gap-2 text-teal-700 font-semibold hover:gap-3 transition-all"
-              >
-                View All Packages <span className="text-xl">→</span>
-              </Link>
+
+              {/* Right: Highlighted Deals */}
+              <div className="space-y-4">
+                {popularPackages.slice(0, 3).map((pkg: any, index: number) => (
+                  <ScrollReveal key={pkg.id} delay={index * 0.15}>
+                    <div className="flex flex-col md:flex-row bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
+                      <div className="relative w-full md:w-1/2 h-52 md:h-auto">
+                        <div
+                          className="absolute inset-0 bg-cover bg-center"
+                          style={{
+                            backgroundImage: pkg.featured_image
+                              ? `url(${pkg.featured_image})`
+                              : "url(/videos/adventure-1.png)",
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                          <p className="text-xs uppercase tracking-wide text-teal-200 mb-1">Featured Package</p>
+                          <h3 className="text-lg font-bold line-clamp-2">{pkg.title}</h3>
+                          <p className="text-sm text-gray-200 mt-1 flex items-center gap-2">
+                            <Map size={14} /> {pkg.location}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex-1 p-5 flex flex-col justify-between bg-white">
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <span className="inline-flex items-center px-2 py-1 text-xs font-semibold text-teal-700 bg-teal-50 rounded-full">
+                              {pkg.duration}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              Starting from ₹{pkg.price?.toLocaleString()}
+                            </span>
+                          </p>
+                          <p className="text-sm text-gray-600 line-clamp-3">{pkg.description}</p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {(pkg.inclusions || []).slice(0, 3).map((inc: string, i: number) => (
+                              <span
+                                key={i}
+                                className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200"
+                              >
+                                {inc}
+                              </span>
+                            ))}
+                            {pkg.inclusions && pkg.inclusions.length > 3 && (
+                              <span className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-500">
+                                +{pkg.inclusions.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="mt-4 flex items-center justify-between">
+                          <p className="text-xs text-gray-500">
+                            Private cabs • Flexible dates • Local support
+                          </p>
+                          <Link
+                            href={`/packages/${pkg.slug}`}
+                            className="text-sm font-semibold text-teal-600 hover:text-teal-800 flex items-center gap-1"
+                          >
+                            View Details
+                            <span>→</span>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
             </div>
           </ScrollReveal>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {popularPackages.map((pkg: any, index: number) => (
-              <ScrollReveal key={pkg.id} delay={index * 0.1}>
-                <PackageCard
-                  id={pkg.id}
-                  title={pkg.title}
-                  duration={pkg.duration}
-                  price={pkg.price}
-                  image={pkg.featured_image}
-                  slug={pkg.slug}
-                  location={pkg.location}
-                />
-              </ScrollReveal>
-            ))}
-          </div>
-
-          <div className="mt-12 text-center md:hidden">
-            <Link 
-              href="/packages" 
-              className="inline-flex items-center gap-2 text-teal-700 font-semibold hover:gap-3 transition-all"
-            >
-              View All Packages <span className="text-xl">→</span>
-            </Link>
-          </div>
         </div>
       </section>
 

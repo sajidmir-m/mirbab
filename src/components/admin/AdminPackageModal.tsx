@@ -140,18 +140,43 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
   // Itinerary Management
   const addItineraryDay = () => {
     if (!itineraryDay.title || !itineraryDay.desc) return;
-    setFormData(prev => ({
-      ...prev,
-      itinerary: [...prev.itinerary, { ...itineraryDay, day: prev.itinerary.length + 1 }]
-    }));
-    setItineraryDay({ day: formData.itinerary.length + 2, title: '', desc: '' });
+
+    setFormData(prev => {
+      const nextIndex = prev.itinerary.length;
+      const newItinerary = [
+        ...prev.itinerary,
+        { ...itineraryDay, day: nextIndex + 1 },
+      ];
+
+      // Normalize day numbers so they are always 1..N in order
+      const normalized = newItinerary.map((d, idx) => ({
+        ...d,
+        day: idx + 1,
+      }));
+
+      return {
+        ...prev,
+        itinerary: normalized,
+      };
+    });
+
+    // Reset input fields; the "Add Day X" label is based on formData.itinerary.length + 1
+    setItineraryDay({ day: 0, title: '', desc: '' });
   };
 
   const removeItineraryDay = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      itinerary: prev.itinerary.filter((_, i) => i !== index)
-    }));
+    setFormData(prev => {
+      const filtered = prev.itinerary.filter((_, i) => i !== index);
+      const normalized = filtered.map((d, idx) => ({
+        ...d,
+        day: idx + 1,
+      }));
+
+      return {
+        ...prev,
+        itinerary: normalized,
+      };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

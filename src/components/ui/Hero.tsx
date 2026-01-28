@@ -8,13 +8,11 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 const heroVideos = [
   {
     src: "/videos/hero-bg.mp4",
-    poster: "https://images.unsplash.com/photo-1566837945700-30057527ade0?q=80&w=2070&auto=format&fit=crop",
     title: "Kashmir",
     subtitle: "Like Never Before"
   },
   {
     src: "/videos/hero-2.mp4",
-    poster: "https://images.unsplash.com/photo-1480497490787-505ec076689f?q=80&w=2069&auto=format&fit=crop",
     title: "Winter",
     subtitle: "Wonderland Awaits"
   }
@@ -55,7 +53,6 @@ export default function Hero() {
             loop 
             muted 
             playsInline
-            poster={heroVideos[currentIndex].poster}
             className="w-full h-full object-cover opacity-80"
           >
             <source src={heroVideos[currentIndex].src} type="video/mp4" />

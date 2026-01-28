@@ -20,13 +20,15 @@ import {
   Database,
   Users,
   Menu,
-  X
+  X,
+  Car
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MOCK_PACKAGES } from '@/data/packages';
 import AdminPackageModal from '@/components/admin/AdminPackageModal';
 import AdminFAQModal from '@/components/admin/AdminFAQModal';
 import AdminInquiryModal from '@/components/admin/AdminInquiryModal';
+import AdminCabModal from '@/components/admin/AdminCabModal';
 
 export default function AdminPanel() {
   const [session, setSession] = useState<any>(null);
@@ -36,6 +38,7 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [inquiries, setInquiries] = useState<any[]>([]);
   const [packages, setPackages] = useState<any[]>([]);
+  const [cabs, setCabs] = useState<any[]>([]);
   const [faqs, setFaqs] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,6 +50,8 @@ export default function AdminPanel() {
   const [selectedFAQ, setSelectedFAQ] = useState<any>(null);
   const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
   const [selectedInquiry, setSelectedInquiry] = useState<any>(null);
+  const [isCabModalOpen, setIsCabModalOpen] = useState(false);
+  const [selectedCab, setSelectedCab] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Mock Stats
@@ -121,7 +126,15 @@ export default function AdminPanel() {
     
     if (faqData) setFaqs(faqData);
 
-    // 4. Fetch Users
+    // 4. Fetch Cabs
+    const { data: cabData } = await supabase
+      .from('cabs')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (cabData) setCabs(cabData);
+
+    // 5. Fetch Users
     const { data: userData } = await supabase
       .from('profiles')
       .select('*')
@@ -222,6 +235,16 @@ export default function AdminPanel() {
     }
   };
 
+  const handleDeleteCab = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this cab plan?')) return;
+    const { error } = await supabase.from('cabs').delete().eq('id', id);
+    if (error) {
+      alert('Error deleting cab plan: ' + error.message);
+    } else {
+      fetchData();
+    }
+  };
+
   // Login Screen
   if (!session) {
     return (
@@ -304,6 +327,7 @@ export default function AdminPanel() {
             { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
             { id: 'inquiries', label: 'Inquiries', icon: MessageSquare },
             { id: 'packages', label: 'Tour Packages', icon: Package },
+            { id: 'cabs', label: 'Cabs', icon: Car },
             { id: 'faqs', label: 'Chatbot FAQs', icon: HelpCircle },
             { id: 'users', label: 'Users', icon: Users },
           ].map((item) => (
@@ -354,6 +378,7 @@ export default function AdminPanel() {
               { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
               { id: 'inquiries', label: 'Inquiries', icon: MessageSquare },
               { id: 'packages', label: 'Tour Packages', icon: Package },
+              { id: 'cabs', label: 'Cabs', icon: Car },
               { id: 'faqs', label: 'Chatbot FAQs', icon: HelpCircle },
               { id: 'users', label: 'Users', icon: Users },
             ].map((item) => (
@@ -582,6 +607,119 @@ export default function AdminPanel() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Cabs View */}
+          {activeTab === 'cabs' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-gray-900">Cab Plans</h3>
+                <button
+                  onClick={() => {
+                    setSelectedCab(null);
+                    setIsCabModalOpen(true);
+                  }}
+                  className="flex items-center gap-2 bg-teal-600 text-white px-5 py-2.5 rounded-xl hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/20 font-medium"
+                >
+                  <Plus size={18} /> Add New Cab Plan
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {cabs.map((cab) => (
+                  <div
+                    key={cab.id}
+                    className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-md transition-all relative"
+                  >
+                    <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCab(cab);
+                          setIsCabModalOpen(true);
+                        }}
+                        className="p-2 bg-white/90 backdrop-blur-sm rounded-lg text-teal-600 hover:text-teal-800 shadow-sm"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCab(cab.id);
+                        }}
+                        className="p-2 bg-white/90 backdrop-blur-sm rounded-lg text-red-500 hover:text-red-700 shadow-sm"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+
+                    <div className="h-32 bg-gradient-to-r from-teal-600 to-emerald-500 flex items-center justify-center text-white">
+                      <div className="flex flex-col items-center gap-1">
+                        <Car size={32} />
+                        <span className="text-xs uppercase tracking-wide opacity-80">
+                          {cab.vehicle_type || "Private Cab"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      <div className="flex justify-between items-start mb-2 gap-3">
+                        <h3 className="font-bold text-base sm:text-lg text-gray-900 leading-tight">
+                          {cab.name}
+                        </h3>
+                        {cab.duration && (
+                          <span className="bg-teal-50 text-teal-700 text-xs font-bold px-2 py-1 rounded-lg whitespace-nowrap">
+                            {cab.duration}
+                          </span>
+                        )}
+                      </div>
+                      {cab.starting_from && (
+                        <p className="text-sm font-semibold text-teal-600 mb-2">
+                          From {cab.starting_from}
+                        </p>
+                      )}
+                      {cab.ideal_for && (
+                        <p className="text-xs text-gray-500 mb-2">Ideal for: {cab.ideal_for}</p>
+                      )}
+                      <p className="text-xs text-gray-600 mb-3 line-clamp-2">{cab.description}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {cab.routes?.slice(0, 3).map((r: string, i: number) => (
+                          <span
+                            key={i}
+                            className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-md border border-gray-100"
+                          >
+                            {r}
+                          </span>
+                        ))}
+                        {cab.routes?.length > 3 && (
+                          <span className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-md border border-gray-100">
+                            +{cab.routes.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {cabs.length === 0 && (
+                  <div className="col-span-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center text-gray-500">
+                    <Car size={40} className="mx-auto mb-3 text-gray-300" />
+                    <p className="font-medium mb-1">No cab plans added yet.</p>
+                    <p className="text-sm mb-4">
+                      Use &quot;Add New Cab Plan&quot; to create your first cab package (day trips, airport
+                      transfers, multi-day tours).
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSelectedCab(null);
+                        setIsCabModalOpen(true);
+                      }}
+                      className="inline-flex items-center gap-2 bg-teal-600 text-white px-5 py-2.5 rounded-xl hover:bg-teal-700 transition-colors text-sm font-medium"
+                    >
+                      <Plus size={16} /> Add New Cab Plan
+                    </button>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}

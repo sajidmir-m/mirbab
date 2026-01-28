@@ -123,3 +123,26 @@ INSERT INTO chatbot_faqs (question, answer, category) VALUES
 ('When is the best time to visit Kashmir?', 'The best time to visit Kashmir is from March to October for pleasant weather. For snow and skiing, December to February is ideal.', 'General'),
 ('What are the package prices?', 'Our packages start from ₹12,499 depending on the duration and season. Please check our "Tour Packages" page for details.', 'Pricing'),
 ('Do you provide hotel and transport?', 'Yes, all our packages include hotel stays (3-star to 5-star) and comfortable transport (Sedan/SUV/Tempo Traveller).', 'Services');
+
+-- Table: cabs (for cab plans & transfers)
+CREATE TABLE cabs (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  description TEXT,
+  duration TEXT,              -- e.g. "Full Day", "3–7 Days"
+  starting_from TEXT,         -- price label like "₹3,500"
+  vehicle_type TEXT,          -- Sedan / SUV / Tempo Traveller / Mixed
+  ideal_for TEXT,             -- Families, Groups etc.
+  routes TEXT[],              -- array of route badges
+  is_featured BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Cabs: Public read, Admin manage
+ALTER TABLE cabs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Cabs are viewable by everyone" ON cabs FOR SELECT USING (true);
+CREATE POLICY "Admins can insert cabs" ON cabs FOR INSERT WITH CHECK (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
+CREATE POLICY "Admins can update cabs" ON cabs FOR UPDATE USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
+CREATE POLICY "Admins can delete cabs" ON cabs FOR DELETE USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));

@@ -22,6 +22,8 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Packages', href: '/packages' },
+    { name: 'Places', href: '/places' },
+    { name: 'Cabs', href: '/cabs' },
     { name: 'About Us', href: '/about' },
     { name: 'Contact', href: '/contact' },
     { name: 'My Bookings', href: '/bookings' },
