@@ -1,52 +1,7 @@
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import Link from "next/link";
 import { Car, MapPin, Clock, Phone } from "lucide-react";
-
-const CAB_PLANS = [
-  {
-    name: "Srinagar Local Sightseeing",
-    description: "Full-day private cab for Mughal Gardens, Dal Lake, Shankaracharya Temple and local markets.",
-    duration: "8 Hours",
-    startingFrom: "₹2,200",
-    idealFor: "Families, Couples, Friends",
-    routes: ["Airport / Hotel Pickup", "Mughal Gardens", "Shankaracharya Temple", "Shopping Drop"],
-  },
-  {
-    name: "Srinagar – Gulmarg – Srinagar",
-    description: "Day trip to Gulmarg with comfortable cab, waiting, and return to Srinagar.",
-    duration: "Full Day",
-    startingFrom: "₹3,500",
-    idealFor: "Snow Lovers, Skiing, Gondola Ride",
-    routes: ["Hotel Pickup", "Gulmarg", "View Points", "Back to Srinagar"],
-  },
-  {
-    name: "Srinagar – Pahalgam – Srinagar",
-    description:
-      "Scenic drive along Lidder river with stops at Pampore Saffron Fields and Apple Orchards (seasonal).",
-    duration: "Full Day",
-    startingFrom: "₹4,200",
-    idealFor: "Families & Honeymooners",
-    routes: ["Srinagar", "Pampore", "Awantipora", "Pahalgam", "Back to Srinagar"],
-  },
-  {
-    name: "Srinagar – Sonmarg – Srinagar",
-    description:
-      "A beautiful drive along the Sindh river up to Sonmarg with plenty of photography stops.",
-    duration: "Full Day",
-    startingFrom: "₹4,000",
-    idealFor: "Scenic Drives & Day Trips",
-    routes: ["Srinagar", "Ganderbal", "Sonmarg", "Back to Srinagar"],
-  },
-  {
-    name: "Multi-Day Kashmir Cab (Custom)",
-    description:
-      "Hire a private cab with driver for your entire Kashmir trip. Ideal for flexible custom itineraries.",
-    duration: "3–7 Days",
-    startingFrom: "On Request",
-    idealFor: "Families, Groups, Long Stays",
-    routes: ["Srinagar", "Gulmarg", "Pahalgam", "Sonmarg", "Doodhpathri / Gurez (optional)"],
-  },
-];
+import { CAB_PLANS } from "@/data/cabs";
 
 const VEHICLE_TYPES = [
   {
@@ -121,8 +76,15 @@ export default function CabsPage() {
           {/* Cab Plans */}
           <ScrollReveal width="100%">
             <div className="mb-6 flex items-center justify-between gap-4 flex-wrap">
-              <h2 className="text-2xl font-bold text-gray-900">Popular Cab Plans</h2>
-              <p className="text-sm text-gray-600">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-wide text-teal-600">
+                  Best-Selling Routes
+                </span>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mt-1">
+                  Popular Cab Plans
+                </h2>
+              </div>
+              <p className="text-sm md:text-base text-teal-700 bg-teal-50 border border-teal-100 px-4 py-2 rounded-xl">
                 Note: Prices are indicative and vary by season. Contact us for today&apos;s best deal.
               </p>
             </div>
@@ -186,12 +148,12 @@ export default function CabsPage() {
                   <Phone size={16} /> Request Cab Quote
                 </Link>
                 <a
-                  href="https://wa.me/919149559393"
+                  href="https://wa.me/919906646113"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-white/60 text-sm font-semibold hover:bg-white/10 transition-colors"
                 >
-                  Chat on WhatsApp
+                  Our WhatsApp: +91 9906646113
                 </a>
               </div>
             </div>

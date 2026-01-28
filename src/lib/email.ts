@@ -82,7 +82,7 @@ export function generateInquiryEmail(inquiry: any, packageDetails?: any) {
               <p>${inquiry.message ? `<strong>Your Message:</strong><br>${inquiry.message}` : ''}</p>
               
               <p>In the meantime, feel free to explore our <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://mirbabatourandtravels.com'}/packages">tour packages</a> or contact us directly:</p>
-              <p>📞 +91 9149559393<br>📧 info@mirbabatourandtravels.com</p>
+              <p>📞 Call (Priority): +91 6005107475<br>💬 Our WhatsApp: +91 9906646113<br>📧 mirbabatourtravels@gmail.com</p>
             </div>
             <div class="footer">
               <p>© ${new Date().getFullYear()} Mir Baba Tour and Travels. All rights reserved.</p>
@@ -91,7 +91,7 @@ export function generateInquiryEmail(inquiry: any, packageDetails?: any) {
         </body>
       </html>
     `,
-    text: `Thank You, ${inquiry.name}!\n\nWe have received your inquiry and our travel experts will contact you within 24 hours.\n\nContact us: +91 9149559393 | info@mirbabatourandtravels.com`,
+    text: `Thank You, ${inquiry.name}!\n\nWe have received your inquiry and our travel experts will contact you within 24 hours.\n\nContact us:\nCall (Priority): +91 6005107475\nOur WhatsApp: +91 9906646113\nEmail: mirbabatourtravels@gmail.com`,
   };
 }
 
@@ -131,7 +131,7 @@ export function generateBookingConfirmationEmail(booking: any, packageDetails: a
               </div>
               
               <p>Our team will contact you shortly with further details and payment instructions.</p>
-              <p>For any queries, contact us:<br>📞 +91 9149559393<br>📧 info@mirbabatourandtravels.com</p>
+              <p>For any queries, contact us:<br>📞 Call (Priority): +91 6005107475<br>💬 Our WhatsApp: +91 9906646113<br>📧 mirbabatourtravels@gmail.com</p>
             </div>
             <div class="footer">
               <p>© ${new Date().getFullYear()} Mir Baba Tour and Travels. All rights reserved.</p>

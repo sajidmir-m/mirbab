@@ -207,16 +207,16 @@ export default function BookingConfirmation({ params }: { params: Promise<{ id: 
           <p className="text-gray-600 mb-6">Our team is here to assist you with any questions.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="https://wa.me/919149559393"
+              href="https://wa.me/919906646113"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 bg-green-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-700 transition-colors"
             >
               <Phone size={18} />
-              WhatsApp Us
+              Our WhatsApp: +91 9906646113
             </a>
             <a
-              href="mailto:info@mirbabatourandtravels.com"
+              href="mailto:mirbabatourtravels@gmail.com"
               className="inline-flex items-center justify-center gap-2 bg-teal-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-teal-700 transition-colors"
             >
               <Mail size={18} />

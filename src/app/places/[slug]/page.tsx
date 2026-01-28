@@ -4,6 +4,7 @@ import Link from "next/link";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { Car, Info, MapPin, Route } from "lucide-react";
 import { getPlaceBySlug, PLACES } from "@/data/places";
+import { supabase } from "@/lib/supabase";
 
 interface PlacePageProps {
   params: Promise<{ slug: string }>;
@@ -15,11 +16,40 @@ export function generateStaticParams() {
 
 export const dynamicParams = true;
 
+async function getSupabasePlace(slug: string) {
+  try {
+    const { data, error } = await supabase
+      .from("places")
+      .select("id,name,slug,tag,location,description,highlights,best_time,ideal_stay,hero_image,is_featured")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (error) throw error;
+    return data || null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function PlaceDetailPage({ params }: PlacePageProps) {
   const { slug } = await params;
-  const place = getPlaceBySlug(slug);
+  const staticPlace = getPlaceBySlug(slug);
+  const dbPlace = await getSupabasePlace(slug);
 
-  if (!place) {
+  const place: any = {
+    ...(staticPlace || {}),
+    ...(dbPlace || {}),
+    // normalize names for existing UI
+    bestTime: dbPlace?.best_time ?? staticPlace?.bestTime,
+    idealStay: dbPlace?.ideal_stay ?? staticPlace?.idealStay,
+    heroImage: dbPlace?.hero_image ?? staticPlace?.heroImage,
+    routePlans: staticPlace?.routePlans ?? [],
+    activities: staticPlace?.activities ?? [],
+    howToReach: staticPlace?.howToReach ?? {},
+    localTips: staticPlace?.localTips ?? [],
+    nearbyPlaces: staticPlace?.nearbyPlaces ?? [],
+  };
+
+  if (!staticPlace && !dbPlace) {
     return notFound();
   }
 
@@ -89,7 +119,7 @@ export default async function PlaceDetailPage({ params }: PlacePageProps) {
                     Highlights & Experiences
                   </h2>
                   <div className="flex flex-wrap gap-2">
-                    {place.highlights.map((h) => (
+                    {(place.highlights || []).map((h: string) => (
                       <span
                         key={h}
                         className="px-3 py-1 text-xs sm:text-sm rounded-full bg-gray-50 text-gray-700 border border-gray-200"
@@ -101,34 +131,37 @@ export default async function PlaceDetailPage({ params }: PlacePageProps) {
                 </div>
 
                 {/* Activities */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
-                    Top Activities in {place.name}
-                  </h2>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {place.activities.map((a) => (
-                      <div key={a.title} className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                        <p className="font-semibold text-gray-900">{a.title}</p>
-                        <div className="mt-2 text-xs text-gray-600 space-y-1">
-                          {a.timeNeeded && (
-                            <p>
-                              <span className="font-semibold">Time:</span> {a.timeNeeded}
-                            </p>
-                          )}
-                          {a.bestFor && (
-                            <p>
-                              <span className="font-semibold">Best for:</span> {a.bestFor}
-                            </p>
-                          )}
-                          {a.notes && <p className="text-gray-500">{a.notes}</p>}
+                {place.activities?.length ? (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
+                      Top Activities in {place.name}
+                    </h2>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {place.activities.map((a: any) => (
+                        <div key={a.title} className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                          <p className="font-semibold text-gray-900">{a.title}</p>
+                          <div className="mt-2 text-xs text-gray-600 space-y-1">
+                            {a.timeNeeded && (
+                              <p>
+                                <span className="font-semibold">Time:</span> {a.timeNeeded}
+                              </p>
+                            )}
+                            {a.bestFor && (
+                              <p>
+                                <span className="font-semibold">Best for:</span> {a.bestFor}
+                              </p>
+                            )}
+                            {a.notes && <p className="text-gray-500">{a.notes}</p>}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ) : null}
 
                 {/* Routes / Plans */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
+                {place.routePlans?.length ? (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
                   <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
                     <h2 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
                       <Route size={18} className="text-teal-600" />
@@ -139,7 +172,7 @@ export default async function PlaceDetailPage({ params }: PlacePageProps) {
                     </span>
                   </div>
                   <div className="space-y-4">
-                    {place.routePlans.map((r) => (
+                    {place.routePlans.map((r: any) => (
                       <div key={r.title} className="rounded-2xl border border-gray-100 p-4 sm:p-5">
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -170,9 +203,11 @@ export default async function PlaceDetailPage({ params }: PlacePageProps) {
                     ))}
                   </div>
                 </div>
+                ) : null}
 
                 {/* How to reach */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
+                {place.howToReach && (place.howToReach.byAir || place.howToReach.byRoad || place.howToReach.byRail || place.howToReach.localTransport) ? (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
                   <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
                     How to Reach {place.name}
                   </h2>
@@ -203,16 +238,19 @@ export default async function PlaceDetailPage({ params }: PlacePageProps) {
                     )}
                   </div>
                 </div>
+                ) : null}
 
                 {/* Tips + Nearby */}
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
+                {(place.localTips?.length || place.nearbyPlaces?.length) ? (
+                  <div className="grid gap-6 md:grid-cols-2">
+                  {place.localTips?.length ? (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
                     <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <Info size={18} className="text-teal-600" />
                       Local Tips
                     </h2>
                     <ul className="space-y-2 text-sm text-gray-600">
-                      {place.localTips.map((t) => (
+                      {place.localTips.map((t: string) => (
                         <li key={t} className="flex gap-2">
                           <span className="mt-2 w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0" />
                           <span>{t}</span>
@@ -220,14 +258,16 @@ export default async function PlaceDetailPage({ params }: PlacePageProps) {
                       ))}
                     </ul>
                   </div>
+                  ) : null}
 
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
+                  {place.nearbyPlaces?.length ? (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
                     <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <MapPin size={18} className="text-teal-600" />
                       Nearby Places
                     </h2>
                     <div className="space-y-3">
-                      {place.nearbyPlaces.map((n) => (
+                      {place.nearbyPlaces.map((n: any) => (
                         <div key={n.name} className="rounded-xl border border-gray-100 p-4">
                           <p className="font-semibold text-gray-900">{n.name}</p>
                           <p className="text-xs text-gray-500 mt-1">
@@ -238,7 +278,9 @@ export default async function PlaceDetailPage({ params }: PlacePageProps) {
                       ))}
                     </div>
                   </div>
+                  ) : null}
                 </div>
+                ) : null}
               </div>
             </ScrollReveal>
 

@@ -2,7 +2,7 @@ import Hero from "@/components/ui/Hero";
 import PackageCard from "@/components/ui/PackageCard";
 import TestimonialCard from "@/components/ui/TestimonialCard";
 import ScrollReveal from "@/components/ui/ScrollReveal";
-import { ShieldCheck, Heart, Map } from "lucide-react";
+import { ShieldCheck, Heart, Map, MapPin, Sun, Snowflake } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
@@ -86,18 +86,51 @@ const features = [
   {
     icon: <ShieldCheck size={32} />,
     title: "Trusted & Safe",
-    desc: "Your safety is our priority. We provide verified hotels and trusted drivers."
+    desc: "Your safety is our priority. We provide verified hotels and trusted drivers.",
   },
   {
     icon: <Heart size={32} />,
     title: "Best Hospitality",
-    desc: "Experience the warm Kashmiri hospitality with our personalized service."
+    desc: "Experience the warm Kashmiri hospitality with our personalized service.",
   },
   {
     icon: <Map size={32} />,
     title: "Custom Itineraries",
-    desc: "We craft tours that match your interests, budget, and time."
-  }
+    desc: "We craft tours that match your interests, budget, and time.",
+  },
+];
+
+const featuredPlaces = [
+  {
+    name: "Srinagar & Dal Lake",
+    slug: "/places/srinagar",
+    tag: "Houseboats • Shikara • Old City",
+    description:
+      "Wake up on a traditional houseboat, glide through Dal Lake in a shikara and explore Mughal gardens and old Srinagar lanes.",
+    bestTime: "All year • Peak: Mar – Nov",
+    badge: "Most Booked",
+    image: "/videos/adventure-2.png",
+  },
+  {
+    name: "Gulmarg",
+    slug: "/places/gulmarg",
+    tag: "Snow • Gondola • Skiing",
+    description:
+      "Perfect for snow-lovers and honeymooners, with one of the highest cable cars in the world and breathtaking meadows.",
+    bestTime: "Dec – Feb (Snow) • Apr – Jun (Meadows)",
+    badge: "Winter Favourite",
+    image: "/videos/adventure-1.png",
+  },
+  {
+    name: "Pahalgam",
+    slug: "/places/pahalgam",
+    tag: "Rivers • Pine Forests • Valleys",
+    description:
+      "Crystal-clear rivers, pine forests and valleys like Betaab & Aru make Pahalgam perfect for families and nature lovers.",
+    bestTime: "Mar – Oct",
+    badge: "Family Friendly",
+    image: "/videos/adventure-1.png",
+  },
 ];
 
 export default async function Home() {
@@ -109,22 +142,96 @@ export default async function Home() {
       {/* Hero Section */}
       <Hero />
 
+      {/* Featured Places Strip */}
+      <section className="py-14 px-4 bg-gradient-to-r from-[#3C0D2B] via-[#4E1438] to-[#22071A]">
+        <div className="max-w-7xl mx-auto">
+          <ScrollReveal width="100%">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
+              <div>
+                <p className="text-xs font-semibold tracking-[0.25em] uppercase text-rose-200">
+                  Top Kashmir Destinations
+                </p>
+                <h2 className="text-2xl md:text-3xl font-bold text-white mt-2">
+                  Handpicked places our guests love the most
+                </h2>
+              </div>
+              <Link
+                href="/places"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-rose-50/90 bg-white/10 border border-rose-200/30 px-4 py-2 rounded-full hover:bg-white/20 transition-colors"
+              >
+                <MapPin size={16} />
+                Explore all places
+              </Link>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {featuredPlaces.map((place, index) => (
+              <ScrollReveal key={place.slug} delay={index * 0.15}>
+                <Link
+                  href={place.slug}
+                  className="group relative overflow-hidden rounded-2xl border border-rose-200/40 bg-white/5 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all"
+                >
+                  <div className="relative h-48">
+                    <div
+                      className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
+                      style={{
+                        backgroundImage: `url(${place.image})`,
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute top-3 left-3">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-100/90 text-[#3C0D2B]">
+                        {place.badge}
+                      </span>
+                    </div>
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                        <MapPin size={16} className="text-rose-200" />
+                        {place.name}
+                      </h3>
+                      <p className="text-xs text-rose-100 mt-1 line-clamp-1">{place.tag}</p>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-white">
+                    <p className="text-sm text-gray-700 line-clamp-3 mb-3">{place.description}</p>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="inline-flex items-center gap-1 text-[#8B1430] font-semibold">
+                        <Sun size={14} />
+                        Best time: {place.bestTime}
+                      </span>
+                      <span className="text-[11px] font-semibold text-gray-500 group-hover:text-[#8B1430]">
+                        View details →
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Why Choose Us */}
       <section className="py-20 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <ScrollReveal width="100%">
             <div className="text-center mb-16">
-              <span className="text-teal-600 font-semibold tracking-wider uppercase text-sm">Why Choose Us</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">Experience Kashmir with Experts</h2>
-              <div className="w-20 h-1 bg-teal-500 mx-auto mt-4 rounded-full"></div>
+              <span className="text-[#8B1430] font-semibold tracking-wider uppercase text-sm">
+                Why Choose Us
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">
+                Experience Kashmir with Local Experts
+              </h2>
+              <div className="w-20 h-1 bg-[#8B1430] mx-auto mt-4 rounded-full"></div>
             </div>
           </ScrollReveal>
 
           <div className="grid md:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <ScrollReveal key={index} delay={index * 0.2}>
-                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl transition-shadow text-center group">
-                  <div className="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-teal-600 group-hover:scale-110 transition-transform duration-300">
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-rose-100 hover:shadow-xl transition-shadow text-center group">
+                  <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-[#8B1430] group-hover:scale-110 transition-transform duration-300">
                     {feature.icon}
                   </div>
                   <h3 className="text-xl font-bold mb-3 text-gray-800">{feature.title}</h3>
@@ -143,13 +250,13 @@ export default async function Home() {
             <div className="grid md:grid-cols-2 gap-10 items-start mb-12">
               {/* Left: Text & Highlights */}
               <div>
-                <span className="text-teal-600 font-semibold tracking-wider uppercase text-sm">
+                <span className="text-[#8B1430] font-semibold tracking-wider uppercase text-sm">
                   Tour Packages
                 </span>
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">
                   Most Popular Adventures in Kashmir
                 </h2>
-                <div className="w-20 h-1 bg-teal-500 mt-4 rounded-full" />
+                <div className="w-20 h-1 bg-[#8B1430] mt-4 rounded-full" />
                 <p className="text-gray-600 mt-4">
                   Handpicked Kashmir tour packages with premium cabs, curated stays, and local experts.
                   From romantic houseboats on Dal Lake to thrilling drives to Gulmarg and Sonmarg,
@@ -201,14 +308,14 @@ export default async function Home() {
                 <div className="mt-8 flex flex-wrap items-center gap-4">
                   <Link
                     href="/packages"
-                    className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-teal-500/30"
+                    className="inline-flex items-center gap-2 bg-[#8B1430] hover:bg-[#6E0F25] text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-rose-400/40"
                   >
                     View All Packages
                     <span className="text-xl">→</span>
                   </Link>
                   <Link
                     href="/contact"
-                    className="inline-flex items-center gap-2 text-teal-700 font-semibold hover:underline"
+                    className="inline-flex items-center gap-2 text-[#8B1430] font-semibold hover:underline"
                   >
                     Get a Custom Quote
                   </Link>
@@ -269,13 +376,13 @@ export default async function Home() {
                           <p className="text-xs text-gray-500">
                             Private cabs • Flexible dates • Local support
                           </p>
-                          <Link
+              <Link 
                             href={`/packages/${pkg.slug}`}
                             className="text-sm font-semibold text-teal-600 hover:text-teal-800 flex items-center gap-1"
-                          >
+              >
                             View Details
                             <span>→</span>
-                          </Link>
+              </Link>
                         </div>
                       </div>
                     </div>

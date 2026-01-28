@@ -10,9 +10,9 @@ export default function StructuredData() {
     logo: `${baseUrl}/logo.png`,
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+91-9149559393',
+      telephone: '+91-6005107475',
       contactType: 'Customer Service',
-      email: 'info@mirbabatourandtravels.com',
+      email: 'mirbabatourtravels@gmail.com',
       areaServed: 'IN',
       availableLanguage: ['English', 'Hindi', 'Kashmiri'],
     },

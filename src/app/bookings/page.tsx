@@ -308,12 +308,12 @@ export default function CustomerPortal() {
                         </Link>
                       )}
                       <a
-                        href="https://wa.me/919149559393"
+                        href="https://wa.me/919906646113"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="px-4 py-2 bg-green-50 text-green-700 rounded-lg font-medium hover:bg-green-100 transition-colors text-center"
                       >
-                        Contact Support
+                        Our WhatsApp: +91 9906646113
                       </a>
                     </div>
                   </div>

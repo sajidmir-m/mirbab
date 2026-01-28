@@ -2,8 +2,40 @@ import ScrollReveal from "@/components/ui/ScrollReveal";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { PLACES } from "@/data/places";
+import { supabase } from "@/lib/supabase";
 
-export default function PlacesPage() {
+async function getPlaces() {
+  try {
+    const { data, error } = await supabase
+      .from("places")
+      .select("id,name,slug,tag,location,description,highlights,best_time,ideal_stay,hero_image,is_featured")
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    if (data && data.length > 0) return data;
+  } catch {
+    // fallback below
+  }
+
+  // Fallback to local seed data
+  return PLACES.map((p: any) => ({
+    name: p.name,
+    slug: p.slug,
+    tag: p.tag,
+    location: p.location,
+    description: p.description,
+    highlights: p.highlights,
+    best_time: p.bestTime,
+    ideal_stay: p.idealStay,
+    hero_image: p.heroImage,
+    is_featured: true,
+  }));
+}
+
+export default async function PlacesPage() {
+  const places = await getPlaces();
+
   return (
     <div className="bg-gray-50 min-h-screen pt-24 pb-20">
       <section className="px-4">
@@ -26,10 +58,19 @@ export default function PlacesPage() {
 
           {/* Places Grid */}
           <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {PLACES.map((place, index) => (
-              <ScrollReveal key={place.name} delay={index * 0.1}>
+            {places.map((place: any, index: number) => (
+              <ScrollReveal key={place.slug || place.name} delay={index * 0.1}>
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full">
-                  <div className="relative h-40 bg-gradient-to-r from-teal-600 to-emerald-500 flex items-end p-4 text-white">
+                  <div className="relative h-44 bg-gradient-to-r from-teal-600 to-emerald-500 flex items-end p-4 text-white overflow-hidden">
+                    {place.hero_image ? (
+                      <>
+                        <div
+                          className="absolute inset-0 bg-cover bg-center"
+                          style={{ backgroundImage: `url(${place.hero_image})` }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      </>
+                    ) : null}
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <MapPin size={18} />
@@ -43,7 +84,7 @@ export default function PlacesPage() {
                     <div className="mb-4">
                       <p className="text-xs font-semibold text-gray-700 mb-1">Highlights</p>
                       <div className="flex flex-wrap gap-2">
-                        {place.highlights.map((h) => (
+                        {(place.highlights || []).map((h: string) => (
                           <span
                             key={h}
                             className="px-2.5 py-1 text-[11px] rounded-full bg-gray-100 text-gray-700 border border-gray-200"
@@ -55,8 +96,8 @@ export default function PlacesPage() {
                     </div>
                     <div className="mt-auto flex flex-col gap-3 pt-3 border-t border-gray-100">
                       <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>Best time: {place.bestTime}</span>
-                        <span>Ideal stay: {place.idealStay}</span>
+                        <span>Best time: {place.best_time || place.bestTime}</span>
+                        <span>Ideal stay: {place.ideal_stay || place.idealStay}</span>
                       </div>
                       <Link
                         href={`/places/${place.slug}`}

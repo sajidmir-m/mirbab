@@ -1,8 +1,12 @@
 
 import Link from 'next/link';
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Instagram, Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
 
 export default function Footer() {
+  const primaryCallNumber = '6005107475';
+  const whatsappNumber = '9906646113';
+  const email = 'mirbabatourtravels@gmail.com';
+
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -36,15 +40,21 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3 text-gray-400 text-sm">
                 <Phone size={18} />
-                <a href="tel:+919149559393">+91 9149559393</a>
+                <a href={`tel:+91${primaryCallNumber}`}>Call: +91 {primaryCallNumber}</a>
               </li>
               <li className="flex items-center gap-3 text-gray-400 text-sm">
-                <Phone size={18} />
-                <a href="tel:+916005107475">+91 6005107475</a>
+                <MessageCircle size={18} />
+                <a
+                  href={`https://wa.me/91${whatsappNumber}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Our WhatsApp: +91 {whatsappNumber}
+                </a>
               </li>
               <li className="flex items-center gap-3 text-gray-400 text-sm">
                 <Mail size={18} />
-                <a href="mailto:info@mirbabatourandtravels.com">info@mirbabatourandtravels.com</a>
+                <a href={`mailto:${email}`}>{email}</a>
               </li>
             </ul>
           </div>

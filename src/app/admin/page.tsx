@@ -21,14 +21,18 @@ import {
   Users,
   Menu,
   X,
-  Car
+  Car,
+  MapPin
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MOCK_PACKAGES } from '@/data/packages';
+import { PLACES } from '@/data/places';
+import { CAB_PLANS } from '@/data/cabs';
 import AdminPackageModal from '@/components/admin/AdminPackageModal';
 import AdminFAQModal from '@/components/admin/AdminFAQModal';
 import AdminInquiryModal from '@/components/admin/AdminInquiryModal';
 import AdminCabModal from '@/components/admin/AdminCabModal';
+import AdminPlaceModal from '@/components/admin/AdminPlaceModal';
 
 export default function AdminPanel() {
   const [session, setSession] = useState<any>(null);
@@ -39,6 +43,7 @@ export default function AdminPanel() {
   const [inquiries, setInquiries] = useState<any[]>([]);
   const [packages, setPackages] = useState<any[]>([]);
   const [cabs, setCabs] = useState<any[]>([]);
+  const [places, setPlaces] = useState<any[]>([]);
   const [faqs, setFaqs] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,6 +57,8 @@ export default function AdminPanel() {
   const [selectedInquiry, setSelectedInquiry] = useState<any>(null);
   const [isCabModalOpen, setIsCabModalOpen] = useState(false);
   const [selectedCab, setSelectedCab] = useState<any>(null);
+  const [isPlaceModalOpen, setIsPlaceModalOpen] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Mock Stats
@@ -134,7 +141,16 @@ export default function AdminPanel() {
 
     if (cabData) setCabs(cabData);
 
-    // 5. Fetch Users
+    // 5. Fetch Places
+    const { data: placeData } = await supabase
+      .from('places')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (placeData && placeData.length > 0) setPlaces(placeData);
+    else setPlaces(PLACES); // fallback to static list for now
+
+    // 6. Fetch Users
     const { data: userData } = await supabase
       .from('profiles')
       .select('*')
@@ -225,6 +241,58 @@ export default function AdminPanel() {
     }
   };
 
+  const handleSeedCabs = async () => {
+    if (!confirm('Seed cab plans from defaults?')) return;
+    setLoading(true);
+    try {
+      const payload = CAB_PLANS.map((c) => ({
+        name: c.name,
+        slug: c.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+        description: c.description,
+        duration: c.duration,
+        starting_from: c.startingFrom,
+        vehicle_type: c.vehicle_type || null,
+        ideal_for: c.idealFor,
+        routes: c.routes,
+      }));
+      const { error } = await supabase.from('cabs').insert(payload);
+      if (error) throw error;
+      alert('Cab plans seeded.');
+      fetchData();
+    } catch (err: any) {
+      alert('Error seeding cab plans: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSeedPlaces = async () => {
+    if (!confirm('Seed places from defaults?')) return;
+    setLoading(true);
+    try {
+      const payload = PLACES.map((p) => ({
+        name: p.name,
+        slug: p.slug,
+        tag: p.tag,
+        location: p.location,
+        description: p.description,
+        highlights: p.highlights,
+        best_time: p.bestTime,
+        ideal_stay: p.idealStay,
+        hero_image: p.heroImage || null,
+        is_featured: false,
+      }));
+      const { error } = await supabase.from('places').insert(payload);
+      if (error) throw error;
+      alert('Places seeded.');
+      fetchData();
+    } catch (err: any) {
+      alert('Error seeding places: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteFAQ = async (id: string) => {
     if (!confirm('Are you sure you want to delete this FAQ?')) return;
     const { error } = await supabase.from('chatbot_faqs').delete().eq('id', id);
@@ -240,6 +308,16 @@ export default function AdminPanel() {
     const { error } = await supabase.from('cabs').delete().eq('id', id);
     if (error) {
       alert('Error deleting cab plan: ' + error.message);
+    } else {
+      fetchData();
+    }
+  };
+
+  const handleDeletePlace = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this place?')) return;
+    const { error } = await supabase.from('places').delete().eq('id', id);
+    if (error) {
+      alert('Error deleting place: ' + error.message);
     } else {
       fetchData();
     }
@@ -327,6 +405,7 @@ export default function AdminPanel() {
             { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
             { id: 'inquiries', label: 'Inquiries', icon: MessageSquare },
             { id: 'packages', label: 'Tour Packages', icon: Package },
+            { id: 'places', label: 'Places', icon: MapPin },
             { id: 'cabs', label: 'Cabs', icon: Car },
             { id: 'faqs', label: 'Chatbot FAQs', icon: HelpCircle },
             { id: 'users', label: 'Users', icon: Users },
@@ -378,6 +457,7 @@ export default function AdminPanel() {
               { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
               { id: 'inquiries', label: 'Inquiries', icon: MessageSquare },
               { id: 'packages', label: 'Tour Packages', icon: Package },
+              { id: 'places', label: 'Places', icon: MapPin },
               { id: 'cabs', label: 'Cabs', icon: Car },
               { id: 'faqs', label: 'Chatbot FAQs', icon: HelpCircle },
               { id: 'users', label: 'Users', icon: Users },
@@ -611,20 +691,147 @@ export default function AdminPanel() {
             </motion.div>
           )}
 
+          {/* Places View */}
+          {activeTab === 'places' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-bold text-gray-900">Places</h3>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={handleSeedPlaces}
+                    className="flex items-center gap-2 bg-gray-100 text-gray-700 px-5 py-2.5 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                  >
+                    <Database size={18} /> Seed Places
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedPlace(null);
+                      setIsPlaceModalOpen(true);
+                    }}
+                    className="flex items-center gap-2 bg-teal-600 text-white px-5 py-2.5 rounded-xl hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/20 font-medium"
+                  >
+                    <Plus size={18} /> Add New Place
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {places.map((pl) => (
+                  <div key={pl.id || pl.slug} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-md transition-all relative">
+                    <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedPlace(pl);
+                          setIsPlaceModalOpen(true);
+                        }}
+                        className="p-2 bg-white/90 backdrop-blur-sm rounded-lg text-teal-600 hover:text-teal-800 shadow-sm"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      {pl.id && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePlace(pl.id);
+                          }}
+                          className="p-2 bg-white/90 backdrop-blur-sm rounded-lg text-red-500 hover:text-red-700 shadow-sm"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="h-40 bg-gray-200 relative">
+                      {pl.hero_image ? (
+                        <img src={pl.hero_image} alt={pl.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                          <MapPin size={40} />
+                        </div>
+                      )}
+                      {pl.tag && (
+                        <span className="absolute top-3 left-3 bg-white/90 text-teal-700 text-xs font-semibold px-2 py-1 rounded-lg">
+                          {pl.tag}
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-5">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-lg text-gray-900 leading-tight">{pl.name}</h3>
+                        {(pl.best_time || pl.bestTime) && (
+                          <span className="bg-teal-50 text-teal-700 text-xs font-bold px-2 py-1 rounded-lg">
+                            {pl.best_time || pl.bestTime}
+                          </span>
+                        )}
+                      </div>
+                      {pl.location && <p className="text-xs text-gray-500 mb-1">{pl.location}</p>}
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{pl.description}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {pl.highlights?.slice(0, 3).map((h: string, i: number) => (
+                          <span key={i} className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-md border border-gray-100">
+                            {h}
+                          </span>
+                        ))}
+                        {pl.highlights?.length > 3 && (
+                          <span className="text-[11px] bg-gray-50 text-gray-600 px-2 py-0.5 rounded-md border border-gray-100">
+                            +{pl.highlights.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {places.length === 0 && (
+                  <div className="col-span-full bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center text-gray-500">
+                    <MapPin size={40} className="mx-auto mb-3 text-gray-300" />
+                    <p className="font-medium mb-1">No places added yet.</p>
+                    <p className="text-sm mb-4">Use &quot;Seed Places&quot; to insert defaults or add manually.</p>
+                    <div className="flex justify-center gap-2 flex-wrap">
+                      <button
+                        onClick={handleSeedPlaces}
+                        className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-5 py-2.5 rounded-xl hover:bg-gray-200 transition-colors text-sm font-medium"
+                      >
+                        <Database size={16} /> Seed Places
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          setIsPlaceModalOpen(true);
+                        }}
+                        className="inline-flex items-center gap-2 bg-teal-600 text-white px-5 py-2.5 rounded-xl hover:bg-teal-700 transition-colors text-sm font-medium"
+                      >
+                        <Plus size={16} /> Add New Place
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
           {/* Cabs View */}
           {activeTab === 'cabs' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-bold text-gray-900">Cab Plans</h3>
-                <button
-                  onClick={() => {
-                    setSelectedCab(null);
-                    setIsCabModalOpen(true);
-                  }}
-                  className="flex items-center gap-2 bg-teal-600 text-white px-5 py-2.5 rounded-xl hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/20 font-medium"
-                >
-                  <Plus size={18} /> Add New Cab Plan
-                </button>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={handleSeedCabs}
+                    className="flex items-center gap-2 bg-gray-100 text-gray-700 px-5 py-2.5 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                  >
+                    <Database size={18} /> Seed Cabs
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedCab(null);
+                      setIsCabModalOpen(true);
+                    }}
+                    className="flex items-center gap-2 bg-teal-600 text-white px-5 py-2.5 rounded-xl hover:bg-teal-700 transition-colors shadow-lg shadow-teal-600/20 font-medium"
+                  >
+                    <Plus size={18} /> Add New Cab Plan
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -890,6 +1097,26 @@ export default function AdminPanel() {
           setIsPackageModalOpen(false);
         }}
         packageData={selectedPackage}
+      />
+
+      <AdminCabModal
+        isOpen={isCabModalOpen}
+        onClose={() => setIsCabModalOpen(false)}
+        onSave={() => {
+          fetchData();
+          setIsCabModalOpen(false);
+        }}
+        cabData={selectedCab}
+      />
+
+      <AdminPlaceModal
+        isOpen={isPlaceModalOpen}
+        onClose={() => setIsPlaceModalOpen(false)}
+        onSave={() => {
+          fetchData();
+          setIsPlaceModalOpen(false);
+        }}
+        placeData={selectedPlace}
       />
       
       <AdminFAQModal

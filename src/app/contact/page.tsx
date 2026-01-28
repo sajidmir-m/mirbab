@@ -105,8 +105,12 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">Phone Numbers</h3>
-                  <p className="text-gray-600">+91 9149559393</p>
-                  <p className="text-gray-600">+91 6005107475</p>
+                  <p className="text-gray-600">
+                    <span className="font-semibold">Call (Priority):</span> +91 6005107475
+                  </p>
+                  <p className="text-gray-600">
+                    <span className="font-semibold">Our WhatsApp:</span> +91 9906646113
+                  </p>
                 </div>
               </div>
 
@@ -116,7 +120,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">Email Address</h3>
-                  <p className="text-gray-600">info@mirbabatourandtravels.com</p>
+                  <p className="text-gray-600">mirbabatourtravels@gmail.com</p>
                 </div>
               </div>
             </div>

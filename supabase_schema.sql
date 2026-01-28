@@ -118,6 +118,30 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
+-- Table: places (for destinations)
+CREATE TABLE places (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  tag TEXT,
+  location TEXT,
+  description TEXT,
+  highlights TEXT[],
+  best_time TEXT,
+  ideal_stay TEXT,
+  hero_image TEXT,
+  is_featured BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Places: Public read, Admin manage
+ALTER TABLE places ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Places are viewable by everyone" ON places FOR SELECT USING (true);
+CREATE POLICY "Admins can insert places" ON places FOR INSERT WITH CHECK (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
+CREATE POLICY "Admins can update places" ON places FOR UPDATE USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
+CREATE POLICY "Admins can delete places" ON places FOR DELETE USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
+
 -- Insert some initial data
 INSERT INTO chatbot_faqs (question, answer, category) VALUES
 ('When is the best time to visit Kashmir?', 'The best time to visit Kashmir is from March to October for pleasant weather. For snow and skiing, December to February is ideal.', 'General'),
