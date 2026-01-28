@@ -67,7 +67,7 @@ export default function RootLayout({
       >
         <ToastProvider>
           <ConditionalLayout>
-            {children}
+          {children}
           </ConditionalLayout>
         </ToastProvider>
       </body>

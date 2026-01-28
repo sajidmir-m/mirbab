@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mirbabatourandtravels.com';
+  // Use environment variable in production; fall back to the correct .in domain
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.mirbabatourtravels.in';
   
   return {
     rules: [

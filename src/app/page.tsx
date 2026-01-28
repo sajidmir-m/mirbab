@@ -197,18 +197,18 @@ export default async function Home() {
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
-              
+
               <div className="relative h-full flex flex-col justify-end p-8 md:p-12 text-white z-10">
                 <span className="inline-block mb-4 bg-teal-500 text-white text-xs font-bold px-4 py-1.5 rounded-full w-fit">
-                  POPULAR
-                </span>
+              POPULAR
+            </span>
                 <h3 className="text-3xl md:text-4xl font-bold mb-4">
-                  Dal Lake Adventure
-                </h3>
+              Dal Lake Adventure
+            </h3>
                 <p className="text-gray-200 mb-4 text-lg max-w-md">
-                  Experience the charm of Dal Lake with traditional Shikara rides
-                  and breathtaking mountain views.
-                </p>
+              Experience the charm of Dal Lake with traditional Shikara rides
+              and breathtaking mountain views.
+            </p>
                 <div className="mb-6 space-y-2 text-sm text-gray-300">
                   <p className="flex items-center gap-2">
                     <span className="text-teal-400">✓</span> Premium Cab Facilities
@@ -221,12 +221,12 @@ export default async function Home() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <Link
-                    href="/packages"
+            <Link
+              href="/packages"
                     className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl"
-                  >
-                    Explore Tours →
-                  </Link>
+            >
+              Explore Tours →
+            </Link>
                   <a
                     href="https://www.instagram.com/exploring_kashmir____?igsh=cHlyandteW1uNzNm"
                     target="_blank"
@@ -239,9 +239,9 @@ export default async function Home() {
                     </svg>
                   </a>
                 </div>
-              </div>
-            </div>
-          </ScrollReveal>
+          </div>
+        </div>
+      </ScrollReveal>
 
           {/* Right Side - Adventure 2 */}
           <ScrollReveal delay={0.4} width="100%">
@@ -253,20 +253,20 @@ export default async function Home() {
                   backgroundPosition: 'center',
                   backgroundSize: 'cover'
                 }}
-              />
+          />
               <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
-              
+
               <div className="relative h-full flex flex-col justify-end p-8 md:p-12 text-white z-10">
                 <span className="inline-block mb-4 bg-blue-500 text-white text-xs font-bold px-4 py-1.5 rounded-full w-fit">
-                  RECOMMENDED
-                </span>
+              RECOMMENDED
+            </span>
                 <h3 className="text-3xl md:text-4xl font-bold mb-4">
-                  Winter Camping
-                </h3>
+              Winter Camping
+            </h3>
                 <p className="text-gray-200 mb-4 text-lg max-w-md">
-                  Cozy camps, snow-covered valleys, bonfires and unforgettable
-                  winter nights in Kashmir.
-                </p>
+              Cozy camps, snow-covered valleys, bonfires and unforgettable
+              winter nights in Kashmir.
+            </p>
                 <div className="mb-6 space-y-2 text-sm text-gray-300">
                   <p className="flex items-center gap-2">
                     <span className="text-blue-400">✓</span> Luxury SUV & Sedan Options
@@ -279,12 +279,12 @@ export default async function Home() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
-                  <Link
-                    href="/packages"
+            <Link
+              href="/packages"
                     className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl"
-                  >
-                    Plan Camping →
-                  </Link>
+            >
+              Plan Camping →
+            </Link>
                   <a
                     href="https://www.facebook.com/share/16kmY8pU6w/"
                     target="_blank"
@@ -433,12 +433,12 @@ export default async function Home() {
                     </svg>
                     <span>Follow on Facebook</span>
                   </a>
-                </div>
-              </div>
-            </ScrollReveal>
           </div>
         </div>
-      </section>
+      </ScrollReveal>
+    </div>
+  </div>
+</section>
 
       {/* Testimonials Section */}
       <section className="py-20 px-4 bg-gray-50">

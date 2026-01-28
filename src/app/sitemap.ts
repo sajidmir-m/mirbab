@@ -2,7 +2,8 @@ import { MetadataRoute } from 'next';
 import { supabase } from '@/lib/supabase';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mirbabatourandtravels.com';
+  // Use environment variable in production; fall back to the correct .in domain
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.mirbabatourtravels.in';
 
   // Fetch all packages for dynamic routes
   let packages: any[] = [];
