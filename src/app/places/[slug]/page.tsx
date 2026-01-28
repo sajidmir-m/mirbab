@@ -189,7 +189,7 @@ export default async function PlaceDetailPage({ params }: PlacePageProps) {
                           </span>
                         </div>
                         <div className="mt-3 flex flex-wrap gap-2">
-                          {r.routeStops.map((s) => (
+                          {r.routeStops.map((s: string) => (
                             <span
                               key={s}
                               className="px-2.5 py-1 text-[11px] rounded-full bg-gray-50 text-gray-700 border border-gray-200"
@@ -350,7 +350,7 @@ export default async function PlaceDetailPage({ params }: PlacePageProps) {
                   </span>
                 </div>
                 <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-3">
-                  {place.gallery.map((img) => (
+                  {place.gallery.map((img: { url: string; caption?: string }) => (
                     <div
                       key={img.url}
                       className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-gray-100"
