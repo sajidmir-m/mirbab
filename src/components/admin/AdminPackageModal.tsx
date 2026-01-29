@@ -155,7 +155,7 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
       }));
 
       return {
-        ...prev,
+      ...prev,
         itinerary: normalized,
       };
     });
@@ -173,7 +173,7 @@ export default function AdminPackageModal({ isOpen, onClose, onSave, packageData
       }));
 
       return {
-        ...prev,
+      ...prev,
         itinerary: normalized,
       };
     });

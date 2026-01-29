@@ -107,7 +107,7 @@ export default function AboutPage() {
         </div>
 
         <SectionHeading title="Why We Are Different" center={true} />
-
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
           <div className="text-center p-6 border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow">
             <div className="text-4xl font-bold text-[#8B1430] mb-2">10+</div>

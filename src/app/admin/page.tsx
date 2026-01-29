@@ -480,8 +480,8 @@ export default function AdminPanel() {
                 )}
               </button>
             ))}
-          </div>
-
+            </div>
+          
           {/* Dashboard View */}
           {activeTab === 'dashboard' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">

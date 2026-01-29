@@ -41,7 +41,7 @@ export default function Navbar() {
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
+        isScrolled 
           ? 'bg-white/90 backdrop-blur-md shadow-lg py-3'
           : 'bg-gradient-to-r from-[#3C0D2B] via-[#4E1438] to-[#22071A] py-4'
       }`}
@@ -65,15 +65,15 @@ export default function Navbar() {
                   isScrolled ? 'text-[#3C0D2B]' : 'text-white'
                 }`}
               >
-                Mir Baba
-              </span>
+              Mir Baba
+            </span>
               <span
                 className={`text-xs tracking-widest uppercase ${
                   isScrolled ? 'text-[#8B1430]' : 'text-rose-200'
                 }`}
               >
-                Tour & Travels
-              </span>
+              Tour & Travels
+            </span>
             </div>
           </Link>
 
@@ -103,7 +103,7 @@ export default function Navbar() {
               <Phone size={16} />
               <span>Call: +91 {primaryCallNumber}</span>
             </a>
-
+            
             <Link
               href="/contact"
               className={`px-5 py-2.5 rounded-full font-semibold text-sm transition-all transform hover:scale-105 ${
@@ -193,14 +193,14 @@ export default function Navbar() {
                     {email}
                   </a>
                 </div>
-              </div>
-              <Link
-                href="/contact"
-                onClick={() => setIsOpen(false)}
+             </div>
+             <Link
+              href="/contact"
+              onClick={() => setIsOpen(false)}
                 className="block w-full text-center px-5 py-3 rounded-lg bg-[#8B1430] text-white font-semibold shadow-md mt-2"
-              >
-                Book Your Trip
-              </Link>
+            >
+              Book Your Trip
+            </Link>
             </div>
           </div>
         </div>
