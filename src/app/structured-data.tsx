@@ -1,5 +1,5 @@
 export default function StructuredData() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mirbabatourandtravels.com';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.mirbabatourtravels.in';
 
   const organizationSchema = {
     '@context': 'https://schema.org',

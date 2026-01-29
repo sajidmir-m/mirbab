@@ -37,13 +37,41 @@ export default function AboutPage() {
               you board your return flight, our team stays with you like a local guardian in Kashmir.
             </p>
           </div>
-          <div className="relative h-96 rounded-xl overflow-hidden shadow-xl">
-            <Image
-              src="https://images.unsplash.com/photo-1566837945700-30057527ade0?q=80&w=2070&auto=format&fit=crop"
-              alt="Kashmir Landscape"
-              fill
-              className="object-cover"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="relative h-52 sm:h-64 md:h-72 rounded-2xl overflow-hidden border-2 border-[#8B1430]/70 shadow-lg bg-white">
+              <Image
+                src="/mubashir.png"
+                alt="Mubashir Nazir - Founder & Owner"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 240px"
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 py-2">
+                <p className="text-xs font-semibold tracking-[0.18em] text-rose-100 uppercase">
+                  Founder & Owner
+                </p>
+                <p className="text-sm sm:text-base font-extrabold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.7)]">
+                  MUBASHIR NAZIR
+                </p>
+              </div>
+            </div>
+            <div className="relative h-52 sm:h-64 md:h-72 rounded-2xl overflow-hidden border-2 border-[#3C0D2B]/60 shadow-lg bg-white">
+              <Image
+                src="/mubashir 2.png"
+                alt="Mubashir Nazir - Mir Baba Tour & Travels"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 240px"
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 py-2">
+                <p className="text-xs font-semibold tracking-[0.18em] text-rose-100 uppercase">
+                  Mir Baba Tour & Travels
+                </p>
+                <p className="text-sm sm:text-base font-extrabold text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.7)]">
+                  MUBASHIR NAZIR
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
