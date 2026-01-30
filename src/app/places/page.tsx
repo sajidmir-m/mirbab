@@ -1,4 +1,5 @@
 import ScrollReveal from "@/components/ui/ScrollReveal";
+import PlaceImage from "@/components/ui/PlaceImage";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { PLACES } from "@/data/places";
@@ -12,9 +13,26 @@ async function getPlaces() {
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
-    if (data && data.length > 0) return data;
-  } catch {
+    if (error) {
+      console.error("Error fetching places:", error);
+      throw error;
+    }
+    if (data && data.length > 0) {
+      console.log(`✅ Fetched ${data.length} places from Supabase`);
+      // Log places with images for debugging
+      const placesWithImages = data.filter((p: any) => p.hero_image);
+      console.log(`📸 ${placesWithImages.length} places have hero images`);
+      placesWithImages.forEach((p: any) => {
+        console.log(`  - ${p.name}: ${p.hero_image}`);
+      });
+      // Ensure all image URLs are valid
+      return data.map((p: any) => ({
+        ...p,
+        hero_image: p.hero_image || null, // Ensure it's null if empty string
+      }));
+    }
+  } catch (err) {
+    console.error("Error in getPlaces:", err);
     // fallback below
   }
 
@@ -64,11 +82,13 @@ export default async function PlacesPage() {
                   <div className="relative h-44 bg-gradient-to-r from-teal-600 to-emerald-500 flex items-end p-4 text-white overflow-hidden">
                     {place.hero_image ? (
                       <>
-                        <div
-                          className="absolute inset-0 bg-cover bg-center"
-                          style={{ backgroundImage: `url(${place.hero_image})` }}
+                        <PlaceImage
+                          src={place.hero_image}
+                          alt={place.name}
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent z-10" />
                       </>
                     ) : null}
                     <div>

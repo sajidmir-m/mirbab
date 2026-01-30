@@ -103,7 +103,12 @@ export default function PackageDetail({ params }: { params: Promise<{ slug: stri
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw error;
+      }
+
+      console.log('✅ Booking inquiry saved to Supabase:', data);
       
       // Send confirmation email
       try {
@@ -128,9 +133,19 @@ export default function PackageDetail({ params }: { params: Promise<{ slug: stri
         router.push(`/booking-confirmation/${data.id}`);
       }, 2000);
     } catch (err: any) {
-      console.error('Supabase submission failed, falling back to local storage:', err.message || err);
+      console.error('Supabase submission failed:', err.message || err);
       
-      // FALLBACK: Save to LocalStorage for Demo
+      // Show specific error
+      let errorMessage = 'Failed to submit booking. Please try again.';
+      if (err?.message) {
+        if (err.message.includes('row-level security') || err.message.includes('permission')) {
+          errorMessage = 'Database permission error. Please contact support.';
+        } else if (err.message.includes('network') || err.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your connection.';
+        }
+      }
+      
+      // FALLBACK: Save to LocalStorage
       try {
         const existing = JSON.parse(localStorage.getItem('inquiries') || '[]');
         const newInquiry = {
@@ -141,12 +156,21 @@ export default function PackageDetail({ params }: { params: Promise<{ slug: stri
           message: `Booking Inquiry for: ${pkg?.title}\nTravel Date: ${formData.get('date')}`,
           package_id: pkg?.id,
           status: 'pending',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          _source: 'localStorage',
+          _error: err?.message || 'Unknown error'
         };
         localStorage.setItem('inquiries', JSON.stringify([newInquiry, ...existing]));
+        console.warn('⚠️ Saved to LocalStorage (Fallback mode)');
+        showToast('Booking saved locally. Admin will see it, but please check database connection.', 'success');
         setFormStatus('success');
+        // Still redirect but with local ID
+        setTimeout(() => {
+          router.push(`/booking-confirmation/${newInquiry.id}`);
+        }, 2000);
       } catch (lsError) {
         console.error('LocalStorage fallback failed:', lsError);
+        showToast(errorMessage, 'error');
         setFormStatus('error');
       }
     }

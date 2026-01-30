@@ -27,21 +27,29 @@ export default function ContactPage() {
     setStatus('submitting');
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('inquiries')
         .insert([
           { 
             name: formData.name, 
             email: formData.email, 
             phone: formData.phone, 
-            message: formData.message 
+            message: formData.message,
+            status: 'pending'
           }
-        ]);
+        ])
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw error;
+      }
+
+      console.log('✅ Inquiry saved to Supabase:', data);
 
       // Send confirmation email
-      const inquiry = { ...formData, id: 'new' };
+      const inquiry = { ...formData, id: data.id };
       try {
         await sendEmail(generateInquiryEmail(inquiry));
       } catch (emailError) {
@@ -51,25 +59,40 @@ export default function ContactPage() {
       showToast('Message sent successfully! We will contact you soon.', 'success');
       setStatus('success');
       setFormData({ name: '', email: '', phone: '', message: '' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting form:', error);
       
-      // FALLBACK: If Supabase fails (e.g. invalid keys), save to LocalStorage for Demo purposes
+      // Show specific error message
+      let errorMessage = 'Failed to send message. Please try again.';
+      if (error?.message) {
+        if (error.message.includes('row-level security') || error.message.includes('permission')) {
+          errorMessage = 'Database permission error. Please contact support.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else {
+          errorMessage = `Error: ${error.message}`;
+        }
+      }
+      
+      // FALLBACK: If Supabase fails, save to LocalStorage
       try {
         const existing = JSON.parse(localStorage.getItem('inquiries') || '[]');
         const newInquiry = {
           id: Date.now().toString(),
           ...formData,
           status: 'pending',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          _source: 'localStorage',
+          _error: error?.message || 'Unknown error'
         };
         localStorage.setItem('inquiries', JSON.stringify([newInquiry, ...existing]));
-        console.log('Saved to LocalStorage (Fallback mode)');
+        console.warn('⚠️ Saved to LocalStorage (Fallback mode). Error:', error?.message);
+        showToast('Message saved locally. Admin will see it, but please check database connection.', 'success');
         setStatus('success');
         setFormData({ name: '', email: '', phone: '', message: '' });
       } catch (lsError) {
         console.error('LocalStorage fallback failed:', lsError);
-        showToast('Failed to send message. Please try again.', 'error');
+        showToast(errorMessage, 'error');
         setStatus('error');
       }
     }

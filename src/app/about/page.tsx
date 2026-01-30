@@ -56,11 +56,11 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="relative h-52 sm:h-64 md:h-72 rounded-2xl overflow-hidden border-2 border-[#3C0D2B]/60 shadow-lg bg-white">
-              <Image
+            <Image
                 src="/mubashir 2.png"
                 alt="Mubashir Nazir - Mir Baba Tour & Travels"
-                fill
-                className="object-cover"
+              fill
+              className="object-cover"
                 sizes="(max-width: 768px) 50vw, 240px"
               />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-3 py-2">

@@ -28,6 +28,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MOCK_PACKAGES } from '@/data/packages';
 import { PLACES } from '@/data/places';
 import { CAB_PLANS } from '@/data/cabs';
+import { useToast } from '@/components/ui/Toast';
 import AdminPackageModal from '@/components/admin/AdminPackageModal';
 import AdminFAQModal from '@/components/admin/AdminFAQModal';
 import AdminInquiryModal from '@/components/admin/AdminInquiryModal';
@@ -35,6 +36,7 @@ import AdminCabModal from '@/components/admin/AdminCabModal';
 import AdminPlaceModal from '@/components/admin/AdminPlaceModal';
 
 export default function AdminPanel() {
+  const { showToast } = useToast();
   const [session, setSession] = useState<any>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -86,6 +88,7 @@ export default function AdminPanel() {
   const fetchData = async () => {
     // 1. Fetch Inquiries
     let allInquiries: any[] = [];
+    let supabaseError: string | null = null;
     
     // Try Supabase
     const { data: inqData, error: inqError } = await supabase
@@ -93,20 +96,49 @@ export default function AdminPanel() {
       .select('*')
       .order('created_at', { ascending: false });
     
-    if (inqData) allInquiries = [...inqData];
+    if (inqError) {
+      console.error('Error fetching inquiries from Supabase:', inqError);
+      supabaseError = inqError.message;
+      // Show error to admin if RLS is blocking
+      if (inqError.message.includes('row-level security') || inqError.message.includes('permission')) {
+        console.warn('RLS Policy Issue: Admin may not have proper permissions. Check if user has admin role in profiles table.');
+      }
+    }
+    
+    if (inqData) {
+      allInquiries = [...inqData];
+      console.log(`✅ Fetched ${inqData.length} inquiries from Supabase`);
+    }
     
     // Try LocalStorage (Fallback)
     if (typeof window !== 'undefined') {
       const localInquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+      console.log(`📦 Found ${localInquiries.length} inquiries in LocalStorage`);
+      
       // Merge unique inquiries
       const existingIds = new Set(allInquiries.map(i => i.id));
       const newLocal = localInquiries.filter((i: any) => !existingIds.has(i.id));
-      allInquiries = [...allInquiries, ...newLocal];
+      
+      if (newLocal.length > 0) {
+        console.warn(`⚠️ Found ${newLocal.length} inquiries in LocalStorage that are not in Supabase. These may have failed to save.`);
+        // Add LocalStorage inquiries with a flag
+        allInquiries = [...allInquiries, ...newLocal.map((i: any) => ({ ...i, _source: 'localStorage' }))];
+      }
     }
     
     // Sort by date desc
     allInquiries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     setInquiries(allInquiries);
+    
+    // Show warning if there are LocalStorage-only inquiries
+    if (typeof window !== 'undefined' && allInquiries.some((i: any) => i._source === 'localStorage')) {
+      const localOnlyCount = allInquiries.filter((i: any) => i._source === 'localStorage').length;
+      if (localOnlyCount > 0) {
+        setTimeout(() => {
+          alert(`⚠️ Warning: ${localOnlyCount} inquiry/inquiries are stored locally but not in Supabase. This may indicate a database connection or RLS policy issue. Check your Supabase configuration.`);
+        }, 500);
+      }
+    }
 
     // 2. Fetch Packages
     const { data: pkgData } = await supabase
@@ -184,28 +216,105 @@ export default function AdminPanel() {
   const deleteInquiry = async (id: string) => {
     if(!confirm('Are you sure you want to delete this inquiry?')) return;
 
-    // Try deleting from Supabase
-    const { error } = await supabase.from('inquiries').delete().eq('id', id);
+    setLoading(true);
+    let deletedFromSupabase = false;
+    let deletedFromLocal = false;
+    let errorMessage = '';
+
+    try {
+      // Try deleting from Supabase first
+      const { error, data } = await supabase
+        .from('inquiries')
+        .delete()
+        .eq('id', id)
+        .select();
+
+      if (error) {
+        console.error('Supabase delete error:', error);
+        errorMessage = error.message;
+        
+        // Check if it's an RLS/permission error
+        if (error.message.includes('row-level security') || error.message.includes('permission')) {
+          alert(`❌ Delete Failed: Permission denied!\n\nError: ${error.message}\n\nYou may not have delete permissions. Check RLS policies.\n\nRun this SQL in Supabase:\n\nCREATE POLICY "Admins can delete inquiries" ON inquiries FOR DELETE USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));`);
+          setLoading(false);
+          return;
+        }
+      } else {
+        deletedFromSupabase = true;
+        console.log('✅ Deleted from Supabase:', id);
+      }
+    } catch (err: any) {
+      console.error('Delete error:', err);
+      errorMessage = err.message || 'Unknown error';
+    }
     
     // Also delete from LocalStorage if present
+    try {
     const localInquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
     const updatedLocal = localInquiries.filter((i: any) => i.id !== id);
+      if (updatedLocal.length < localInquiries.length) {
     localStorage.setItem('inquiries', JSON.stringify(updatedLocal));
+        deletedFromLocal = true;
+        console.log('✅ Deleted from LocalStorage:', id);
+      }
+    } catch (lsErr) {
+      console.warn('LocalStorage delete error:', lsErr);
+    }
 
-    // Update State
+    // Update State (always remove from UI)
     setInquiries(prev => prev.filter(i => i.id !== id));
+
+    setLoading(false);
+
+    // Show feedback
+    if (deletedFromSupabase && deletedFromLocal) {
+      showToast('Inquiry deleted successfully from both Supabase and LocalStorage.', 'success');
+    } else if (deletedFromSupabase) {
+      showToast('Inquiry deleted successfully from Supabase.', 'success');
+    } else if (deletedFromLocal) {
+      showToast('Inquiry deleted from LocalStorage only. Supabase delete failed.', 'warning');
+      if (errorMessage) {
+        console.error('Delete error details:', errorMessage);
+      }
+    } else {
+      alert(`❌ Failed to delete inquiry!\n\nError: ${errorMessage || 'Unknown error'}\n\nThe inquiry was removed from the UI but may still exist in the database.`);
+    }
+
+    // Refresh data to ensure consistency
+    fetchData();
   };
 
   const toggleInquiryStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'pending' ? 'read' : 'pending';
     
+    try {
     // Update Supabase
-    await supabase.from('inquiries').update({ status: newStatus }).eq('id', id);
+      const { error } = await supabase
+        .from('inquiries')
+        .update({ status: newStatus })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Status update error:', error);
+        if (error.message.includes('row-level security') || error.message.includes('permission')) {
+          alert(`❌ Update Failed: Permission denied!\n\nError: ${error.message}\n\nCheck RLS policies.`);
+          return;
+        }
+      } else {
+        console.log('✅ Status updated in Supabase');
+      }
+    } catch (err: any) {
+      console.error('Status update error:', err);
+    }
 
     // Update LocalStorage
+    try {
     const localInquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
     const updatedLocal = localInquiries.map((i: any) => i.id === id ? { ...i, status: newStatus } : i);
     localStorage.setItem('inquiries', JSON.stringify(updatedLocal));
+    } catch (lsErr) {
+      console.warn('LocalStorage update error:', lsErr);
+    }
 
     // Update State
     setInquiries(prev => prev.map(i => i.id === id ? { ...i, status: newStatus } : i));
@@ -509,6 +618,212 @@ export default function AdminPanel() {
           {/* Inquiries View */}
           {activeTab === 'inquiries' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+                <h3 className="text-lg font-bold text-gray-900">Inquiries</h3>
+                <div className="flex gap-2">
+                  {inquiries.some((i: any) => i._source === 'localStorage') && (
+                    <button
+                      onClick={async () => {
+                        const localOnly = inquiries.filter((i: any) => i._source === 'localStorage');
+                        if (!confirm(`Sync ${localOnly.length} LocalStorage inquiry/inquiries to Supabase?\n\nThis will attempt to save them to the database.`)) return;
+                        
+                        setLoading(true);
+                        let synced = 0;
+                        let failed = 0;
+                        const errors: string[] = [];
+                        
+                        for (const inquiry of localOnly) {
+                          try {
+                            // Safely extract fields with defaults
+                            const cleanInquiry = {
+                              name: inquiry?.name || 'Unknown',
+                              email: inquiry?.email || '',
+                              phone: inquiry?.phone || '',
+                              message: inquiry?.message || null,
+                              package_id: inquiry?.package_id || null,
+                              status: inquiry?.status || 'pending',
+                              created_at: inquiry?.created_at || new Date().toISOString()
+                            };
+                            
+                            // Validate required fields
+                            if (!cleanInquiry.name || !cleanInquiry.email || !cleanInquiry.phone) {
+                              throw new Error('Missing required fields (name, email, or phone)');
+                            }
+                            
+                            const { data, error } = await supabase
+                              .from('inquiries')
+                              .insert([cleanInquiry])
+                              .select()
+                              .single();
+                            
+                            if (error) {
+                              console.error('Sync error:', error);
+                              errors.push(`${cleanInquiry.name}: ${error.message}`);
+                              failed++;
+                              continue; // Skip to next inquiry instead of throwing
+                            }
+                            
+                            synced++;
+                            console.log(`✅ Synced inquiry for ${cleanInquiry.name}`);
+                            
+                            // Remove from LocalStorage after successful sync
+                            try {
+                              const localInquiries = JSON.parse(localStorage.getItem('inquiries') || '[]');
+                              const updated = localInquiries.filter((i: any) => i.id !== inquiry.id);
+                              localStorage.setItem('inquiries', JSON.stringify(updated));
+                            } catch (lsErr) {
+                              console.warn('Failed to update LocalStorage:', lsErr);
+                            }
+                          } catch (err: any) {
+                            console.error('Failed to sync inquiry:', err);
+                            errors.push(`Inquiry sync failed: ${err.message || 'Unknown error'}`);
+                            failed++;
+                          }
+                        }
+                        
+                        setLoading(false);
+                        
+                        let message = `Sync complete:\n✅ ${synced} synced successfully\n❌ ${failed} failed`;
+                        if (errors.length > 0) {
+                          message += `\n\nErrors:\n${errors.slice(0, 3).join('\n')}`;
+                          if (errors.length > 3) message += `\n... and ${errors.length - 3} more`;
+                        }
+                        
+                        alert(message);
+                        fetchData();
+                      }}
+                      disabled={loading}
+                      className="flex items-center gap-2 bg-yellow-500 text-white px-4 py-2 rounded-xl hover:bg-yellow-600 transition-colors text-sm font-medium disabled:opacity-50"
+                      title="Sync LocalStorage inquiries to Supabase"
+                    >
+                      <Database size={16} /> Sync to DB ({inquiries.filter((i: any) => i._source === 'localStorage').length})
+                    </button>
+                  )}
+                  <button
+                    onClick={async () => {
+                      try {
+                        setLoading(true);
+                        
+                        // First, test Supabase connection
+                        const { data: connectionTest, error: connectionError } = await supabase
+                          .from('packages')
+                          .select('id')
+                          .limit(1);
+                        
+                        if (connectionError) {
+                          alert(`❌ Supabase Connection Failed!\n\nError: ${connectionError.message}\n\nPlease check:\n1. NEXT_PUBLIC_SUPABASE_URL in .env.local\n2. NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local\n3. Your internet connection\n4. Supabase project status`);
+                          return;
+                        }
+                        
+                        console.log('✅ Supabase connection OK');
+                        
+                        // Check admin permissions
+                        const { data: { user }, error: userError } = await supabase.auth.getUser();
+                        
+                        if (userError) {
+                          alert(`❌ Auth Error: ${userError.message}`);
+                          return;
+                        }
+                        
+                        if (!user) {
+                          alert('⚠️ Not logged in! Please log in first.');
+                          return;
+                        }
+                        
+                        const { data: profile, error: profileError } = await supabase
+                          .from('profiles')
+                          .select('*')
+                          .eq('id', user.id)
+                          .single();
+                        
+                        if (profileError) {
+                          console.error('Profile fetch error:', profileError);
+                        }
+                        
+                        if (!profile) {
+                          const sqlCommand = `INSERT INTO profiles (id, email, role)
+VALUES ('${user.id}', '${user.email || 'unknown'}', 'admin')
+ON CONFLICT (id) DO UPDATE SET role = 'admin';`;
+                          alert(`⚠️ No profile found!\n\nYour user ID: ${user.id}\nEmail: ${user.email || 'unknown'}\n\nRun this SQL in Supabase SQL Editor:\n\n${sqlCommand}`);
+                          return;
+                        }
+                        
+                        if (profile.role !== 'admin') {
+                          const sqlCommand = `UPDATE profiles SET role = 'admin' WHERE id = '${user.id}';`;
+                          alert(`⚠️ You don't have admin role!\n\nCurrent role: ${profile.role}\nEmail: ${user.email || 'unknown'}\n\nRun this SQL in Supabase SQL Editor:\n\n${sqlCommand}`);
+                          return;
+                        }
+                        
+                        // Test inquiry insert
+                        const testInquiry = {
+                          name: 'Test Admin Check',
+                          email: user.email || 'test@example.com',
+                          phone: '+91 0000000000',
+                          message: 'This is a test inquiry to verify permissions',
+                          status: 'pending'
+                        };
+                        
+                        const { error: insertError } = await supabase
+                          .from('inquiries')
+                          .insert([testInquiry]);
+                        
+                        if (insertError) {
+                          alert(`❌ Insert Test Failed!\n\nError: ${insertError.message}\n\nThis means inquiries cannot be saved. Check RLS policies.\n\nSee fix_inquiries_rls.sql for help.`);
+                          return;
+                        }
+                        
+                        // Test inquiry select
+                        const { data: testData, error: selectError } = await supabase
+                          .from('inquiries')
+                          .select('*')
+                          .eq('email', user.email || 'test@example.com')
+                          .order('created_at', { ascending: false })
+                          .limit(1);
+                        
+                        if (selectError) {
+                          alert(`⚠️ Select Test Failed!\n\nError: ${selectError.message}\n\nYou may not be able to view inquiries.\n\nSee fix_inquiries_rls.sql for help.`);
+                          return;
+                        }
+                        
+                        // Clean up test inquiry
+                        if (testData && testData.length > 0) {
+                          await supabase.from('inquiries').delete().eq('id', testData[0].id);
+                        }
+                        
+                        alert(`✅ All checks passed!\n\nRole: ${profile.role}\nCan insert: ✅\nCan read: ✅\n\nYour setup is correct!`);
+                      } catch (err: any) {
+                        console.error('Permission check error:', err);
+                        alert(`❌ Error: ${err.message || 'Unknown error occurred'}`);
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                    disabled={loading}
+                    className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-600 transition-colors text-sm font-medium disabled:opacity-50"
+                    title="Check admin permissions and database connection"
+                  >
+                    <CheckCircle size={16} /> Check Permissions
+                  </button>
+                  <button
+                    onClick={fetchData}
+                    className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-xl hover:bg-teal-700 transition-colors text-sm font-medium"
+                    title="Refresh inquiries"
+                  >
+                    <Search size={16} /> Refresh
+                  </button>
+                </div>
+              </div>
+              
+              {/* Warning for LocalStorage-only inquiries */}
+              {inquiries.some((i: any) => i._source === 'localStorage') && (
+                <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                  <p className="text-sm text-yellow-800">
+                    <strong>⚠️ Warning:</strong> Some inquiries are stored locally but not in Supabase. 
+                    Check your database connection and RLS policies.
+                  </p>
+                </div>
+              )}
+              
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -568,6 +883,11 @@ export default function AdminPanel() {
                               <p className="text-sm text-gray-600 max-w-xs truncate" title={inq.message}>
                                 {inq.message}
                               </p>
+                              {inq._source === 'localStorage' && (
+                                <span className="inline-block mt-1 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
+                                  Local Only
+                                </span>
+                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

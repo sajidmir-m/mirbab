@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import PlaceImage from "@/components/ui/PlaceImage";
 import Link from "next/link";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { Car, Info, MapPin, Route } from "lucide-react";
@@ -23,9 +24,16 @@ async function getSupabasePlace(slug: string) {
       .select("id,name,slug,tag,location,description,highlights,best_time,ideal_stay,hero_image,is_featured")
       .eq("slug", slug)
       .maybeSingle();
-    if (error) throw error;
+    if (error) {
+      console.error(`Error fetching place ${slug}:`, error);
+      throw error;
+    }
+    if (data && data.hero_image) {
+      console.log(`✅ Fetched place ${slug} with hero_image:`, data.hero_image);
+    }
     return data || null;
-  } catch {
+  } catch (err) {
+    console.error(`Error in getSupabasePlace for ${slug}:`, err);
     return null;
   }
 }
@@ -70,13 +78,16 @@ export default async function PlaceDetailPage({ params }: PlacePageProps) {
           <ScrollReveal width="100%">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="relative h-56 sm:h-72 md:h-80 bg-gradient-to-r from-teal-700 to-emerald-500">
-                {place.heroImage && (
-                  <Image
+                {place.heroImage ? (
+                  <PlaceImage
                     src={place.heroImage}
                     alt={place.name}
-                    fill
                     className="object-cover opacity-85"
+                    priority
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                   />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-r from-teal-700 to-emerald-500" />
                 )}
                 <div className="relative h-full w-full bg-black/30 flex items-end">
                   <div className="p-6 sm:p-8 text-white max-w-2xl">

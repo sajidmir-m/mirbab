@@ -87,11 +87,12 @@ ALTER TABLE package_images ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Package images are viewable by everyone" ON package_images FOR SELECT USING (true);
 CREATE POLICY "Admins can manage package images" ON package_images FOR ALL USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
 
--- Inquiries: Admin read/update, Public insert
+-- Inquiries: Admin read/update/delete, Public insert
 ALTER TABLE inquiries ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Anyone can submit inquiry" ON inquiries FOR INSERT WITH CHECK (true);
 CREATE POLICY "Admins can view inquiries" ON inquiries FOR SELECT USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
 CREATE POLICY "Admins can update inquiries" ON inquiries FOR UPDATE USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
+CREATE POLICY "Admins can delete inquiries" ON inquiries FOR DELETE USING (auth.uid() IN (SELECT id FROM profiles WHERE role = 'admin'));
 
 -- Testimonials: Public read (approved), Admin manage
 ALTER TABLE testimonials ENABLE ROW LEVEL SECURITY;

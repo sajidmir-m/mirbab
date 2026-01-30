@@ -6,14 +6,15 @@ export default function Snowfall() {
   const [snowflakes, setSnowflakes] = useState<{ id: number; left: number; animationDuration: number; opacity: number }[]>([]);
 
   useEffect(() => {
-    const count = 50; // Number of snowflakes
+    // Reduced from 50 to 15 for better performance
+    const count = 15;
     const flakes = [];
     for (let i = 0; i < count; i++) {
       flakes.push({
         id: i,
-        left: Math.random() * 100, // Random horizontal position
-        animationDuration: Math.random() * 3 + 2, // Random speed (2-5s)
-        opacity: Math.random(),
+        left: Math.random() * 100,
+        animationDuration: Math.random() * 3 + 2,
+        opacity: Math.random() * 0.5 + 0.3, // Reduced opacity range
       });
     }
     setSnowflakes(flakes);
