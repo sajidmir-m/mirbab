@@ -28,6 +28,8 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.ico", type: "image/x-icon", sizes: "16x16" },
+      { url: "/favicon.ico", type: "image/x-icon", sizes: "32x32" },
       { url: "/logo.png", type: "image/png", sizes: "192x192" },
       { url: "/logo.png", type: "image/png", sizes: "512x512" },
     ],
@@ -68,6 +70,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="16x16" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="32x32" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/logo.png" />
         <GoogleAnalytics />
         <StructuredData />
       </head>
